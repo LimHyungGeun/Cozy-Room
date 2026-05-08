@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}예약 조회 — COZY ROOM{% endblock %}
+{% block head %}
+<style>
+  .check-page { min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding:60px 24px; }
+  .check-card { width:100%; max-width:480px; }
+  .check-title { font-family:'Playfair Display',serif; font-size:28px; color:var(--white); margin-bottom:8px; }
+  .check-sub { font-size:13px; color:var(--gray); margin-bottom:40px; }
+  .result-card { background:var(--dark2); border:1px solid rgba(201,168,76,.2); border-radius:4px; padding:28px; margin-top:32px; }
+  .result-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--dark3); font-size:13px; }
+  .result-row:last-child { border-bottom:none; }
+  .result-label { color:var(--gray); }
+  .result-value { color:var(--white); font-weight:500; }
+  .status-badge { padding:4px 12px; border-radius:2px; font-size:11px; letter-spacing:.06em; }
+  .status-대기 { background:rgba(201,168,76,.15); color:var(--gold); border:1px solid rgba(201,168,76,.3); }
+  .status-확정 { background:rgba(74,140,92,.15); color:#8fcca0; border:1px solid rgba(74,140,92,.3); }
+  .status-취소 { background:rgba(204,68,68,.15); color:#e8a0a0; border:1px solid rgba(204,68,68,.3); }
+  .status-완료 { background:rgba(60,60,60,.6); color:var(--gray); border:1px solid var(--dark4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="check-page">
+  <div class="check-card">
+    <p style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:12px;">Booking Lookup</p>
+    <h1 class="check-title">예약 조회</h1>
+    <p class="check-sub">예약번호와 예약 시 입력한 연락처로 예약 내역을 확인하세요.<br>비회원도 조회 가능합니다.</p>
+
+    <form method="post">
+      <div class="form-group">
+        <label class="form-label">예약번호 <span style="color:var(--red)">*</span></label>
+        <input type="text" name="booking_code" class="form-control"
+               placeholder="CR로 시작하는 예약번호" required
+               value="{{ request.form.get('booking_code','') }}"
+               style="letter-spacing:.08em; text-transform:uppercase;">
+        <div style="font-size:11px; color:var(--gray); margin-top:4px;">예) CR202403011234</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">연락처 <span style="color:var(--red)">*</span></label>
+        <input type="tel" name="guest_phone" class="form-control"
+               placeholder="예약 시 입력한 연락처" required
+               value="{{ request.form.get('guest_phone','') }}">
+      </div>
+      <button type="submit" class="btn btn-gold btn-block btn-lg">조회하기</button>
+    </form>
+
+    {% if request.method == 'POST' %}
+      {% if result %}
+        <div class="result-card">
+          <div style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:16px;">📋 예약 정보</div>
+          <div class="result-row">
+            <span class="result-label">예약번호</span>
+            <span class="result-value" style="font-family:'Playfair Display',serif; color:var(--gold);">{{ result.booking_code }}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">예약자</span>
+            <span class="result-value">{{ result.guest_name }}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">숙소</span>
+            <span class="result-value">{{ result.hotel_name }}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">객실</span>
+            <span class="result-value">{{ result.room_name }}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">체크인</span>
+            <span class="result-value">{{ result.check_in_date|format_date }}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">체크아웃</span>
+            <span class="result-value">{{ result.check_out_date|format_date }}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">결제 금액</span>
+            <span class="result-value" style="color:var(--gold); font-family:'Playfair Display',serif;">{{ result.total_price|format_price }}원</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">예약 상태</span>
+            <span class="result-value">
+              <span class="status-badge status-{{ result.status }}">{{ result.status }}</span>
+            </span>
+          </div>
+        </div>
+      {% else %}
+        <div class="alert alert-danger" style="margin-top:24px;">
+          예약 정보를 찾을 수 없습니다. 예약번호와 연락처를 다시 확인해주세요.
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <div style="margin-top:32px; padding-top:24px; border-top:1px solid var(--dark3);">
+      <div style="font-size:12px; color:var(--gray); text-align:center;">
+        예약 문의: <span style="color:var(--gold);">1588-0000</span> (평일 09:00–18:00)
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}공지사항 — COZY ROOM{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">공지사항</h1></div></div>
+<div class="container section">
+  {% set notices = [
+    ('2024-04-01', '[안내] 봄 시즌 특가 프로모션 안내', '봄을 맞아 전국 주요 숙소 최대 30% 할인 프로모션을 진행합니다.', True),
+    ('2024-03-15', '[업데이트] 코지룸 앱 v3.2.1 업데이트 안내', '예약 알림 기능 개선 및 버그 수정이 포함된 업데이트입니다.', False),
+    ('2024-03-01', '[정책변경] 취소·환불 정책 변경 안내 (2024.04.01 시행)', '취소 수수료 정책이 변경됩니다. 자세한 내용을 확인해주세요.', False),
+    ('2024-02-14', '[이벤트] 발렌타인데이 특별 프로모션 종료', '발렌타인데이 이벤트가 종료되었습니다. 이용해주셔서 감사합니다.', False),
+    ('2024-01-01', '[신년] 2024년 새해 인사', '2024년에도 코지룸을 이용해주셔서 감사합니다.', False),
+  ] %}
+  {% for date, title, content, is_new in notices %}
+  <div style="border-bottom:1px solid var(--dark3); padding:20px 0; cursor:pointer;" onclick="toggleNotice(this)">
+    <div style="display:flex; align-items:center; gap:12px; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        {% if is_new %}<span class="badge badge-gold">NEW</span>{% endif %}
+        <span style="font-size:14px; color:var(--white);">{{ title }}</span>
+      </div>
+      <span style="font-size:12px; color:var(--gray);">{{ date }}</span>
+    </div>
+    <div style="display:none; margin-top:16px; font-size:13px; color:var(--gray-light); line-height:1.8; padding-left:4px;">
+      {{ content }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  function toggleNotice(el) {
+    const content = el.querySelector('div[style*="display:none"], div[style*="display: none"]');
+    if (!content) {
+      const body = el.querySelector('div:last-child');
+      if (body) body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+  }
+  document.querySelectorAll('[onclick="toggleNotice(this)"]').forEach(el => {
+    el.querySelector('div:last-child').style.display = 'none';
+    el.onclick = function() {
+      const body = this.querySelector('div:last-child');
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    };
+  });
+</script>
+{% endblock %}

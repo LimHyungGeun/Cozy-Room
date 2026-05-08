@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}회사 소개 — COZY ROOM{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">회사 소개</h1></div></div>
+<div class="container section">
+  <div style="max-width:800px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:60px;">
+      <div style="font-family:'Playfair Display',serif; font-size:48px; color:var(--gold); margin-bottom:16px;">Cozy Room</div>
+      <p style="font-size:15px; color:var(--gray-light); line-height:1.9;">
+        코지룸은 2015년 설립된 대한민국 대표 프리미엄 숙박 예약 플랫폼입니다.<br>
+        전국 3,200여 개의 엄선된 숙박 업소와 함께 고객의 특별한 휴식을 만들어갑니다.
+      </p>
+    </div>
+    <div class="grid-3" style="margin-bottom:60px;">
+      {% for icon, title, desc in [('🏆','미션','고객의 특별한 순간을 완벽하게 만들어드립니다'),('🌟','비전','대한민국 No.1 숙박 플랫폼'),('❤️','가치','신뢰, 혁신, 고객 중심')] %}
+      <div style="text-align:center; padding:32px 16px; background:var(--dark2); border:1px solid var(--dark3); border-radius:4px;">
+        <div style="font-size:36px; margin-bottom:12px;">{{ icon }}</div>
+        <div style="font-family:'Noto Serif KR',serif; font-size:16px; color:var(--white); margin-bottom:8px;">{{ title }}</div>
+        <div style="font-size:12px; color:var(--gray);">{{ desc }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="background:var(--dark2); border:1px solid var(--dark3); border-radius:4px; padding:32px;">
+      <div style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:16px;">회사 정보</div>
+      {% for label, val in [('회사명','(주)코지룸'),('대표이사','이코지'),('설립일','2015년 03월 12일'),('사업자등록번호','123-45-67890'),('통신판매업신고','2017-서울강남-4521'),('주소','서울특별시 강남구 테헤란로 152 강남파이낸스센터 17층'),('고객센터','1588-0000'),('이메일','help@cozyroom.kr')] %}
+      <div style="display:flex; gap:24px; padding:12px 0; border-bottom:1px solid var(--dark3); font-size:13px;">
+        <span style="color:var(--gray); min-width:140px;">{{ label }}</span>
+        <span style="color:var(--gray-light);">{{ val }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

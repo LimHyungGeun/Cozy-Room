@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}미디어 관리 — 관리자{% endblock %}
+
+{% block head %}
+<style>
+  .media-wrap { max-width: 1100px; margin: 100px auto 60px; padding: 0 24px; }
+  .media-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 28px; font-weight: 400;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  .media-desc { font-size: 13px; color: var(--gray); margin-bottom: 32px; }
+  .upload-zone {
+    background: var(--dark2); border: 2px dashed var(--dark4);
+    border-radius: 12px; padding: 40px; text-align: center;
+    margin-bottom: 32px; transition: border-color .2s;
+  }
+  .upload-zone:hover { border-color: var(--gold-dark); }
+  .upload-zone input[type="file"] { display: none; }
+  .upload-zone label {
+    cursor: pointer; display: block;
+    color: var(--gray-light); font-size: 14px;
+  }
+  .upload-zone label span { color: var(--gold); text-decoration: underline; }
+  .upload-btn {
+    margin-top: 16px; padding: 10px 32px;
+    background: var(--gold-dark); color: var(--white);
+    border: none; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .upload-btn:hover { background: var(--gold); color: var(--black); }
+  .upload-result {
+    background: var(--dark); border: 1px solid var(--green);
+    border-radius: 8px; padding: 20px; margin-bottom: 32px;
+  }
+  .upload-result h4 { color: var(--green); margin-bottom: 12px; font-size: 14px; }
+  .upload-result code {
+    display: block; background: var(--dark2); padding: 8px 12px;
+    border-radius: 4px; color: var(--gold-light); font-size: 12px;
+    margin-bottom: 8px; word-break: break-all;
+  }
+  .allowed-types {
+    font-size: 11px; color: var(--gray); margin-top: 8px;
+  }
+  .media-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .media-item {
+    background: var(--dark2); border: 1px solid var(--dark4);
+    border-radius: 8px; overflow: hidden;
+  }
+  .media-thumb {
+    width: 100%; height: 120px; object-fit: cover;
+    background: var(--dark); display: flex;
+    align-items: center; justify-content: center;
+  }
+  .media-thumb img { max-width: 100%; max-height: 100%; }
+  .media-info { padding: 10px; }
+  .media-info .fname { font-size: 11px; color: var(--gray-light);
+    word-break: break-all; }
+  .media-info .fdate { font-size: 10px; color: var(--gray); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="media-wrap">
+  <div class="media-title">미디어 관리</div>
+  <div class="media-desc">
+    호텔 썸네일, 아이콘, 배너 등 미디어 파일을 업로드합니다.
+  </div>
+
+  <form method="POST" enctype="multipart/form-data">
+    <div class="upload-zone" id="dropZone">
+      <label for="media_file">
+        <p style="font-size: 40px; margin-bottom: 12px;">📁</p>
+        <p>파일을 드래그하거나 <span>여기를 클릭</span>하세요</p>
+      </label>
+      <input type="file" id="media_file" name="media_file"
+             accept=".png,.jpg,.jpeg,.gif,.svg">
+      <div class="allowed-types">
+        허용 형식: PNG, JPG, JPEG, GIF, SVG &nbsp;|&nbsp; 최대 16MB
+      </div>
+      <button type="submit" class="upload-btn">업로드</button>
+    </div>
+  </form>
+
+  {% if uploaded_info %}
+  <div class="upload-result">
+    <h4>✓ 업로드 완료</h4>
+    <p style="font-size: 13px; color: var(--gray-light); margin-bottom: 8px;">
+      원본: {{ uploaded_info.orig_name }}
+    </p>
+    <code>웹 경로: {{ uploaded_info.web_path }}</code>
+    <p style="font-size: 12px; color: var(--gray); margin-top: 8px;">
+      <a href="{{ uploaded_info.web_path }}" target="_blank"
+         style="color: var(--gold);">파일 열기 →</a>
+    </p>
+  </div>
+  {% endif %}
+
+  {% if uploads %}
+  <h3 style="font-size: 16px; color: var(--white); margin-bottom: 16px;">
+    최근 업로드
+  </h3>
+  <div class="media-grid">
+    {% for upload in uploads %}
+    <div class="media-item">
+      <div class="media-thumb">
+        <a href="/static/uploads/{{ upload.filename }}" target="_blank">
+          <img src="/static/uploads/{{ upload.filename }}"
+               alt="{{ upload.orig_name }}"
+               onerror="this.parentElement.innerHTML='📄'">
+        </a>
+      </div>
+      <div class="media-info">
+        <div class="fname">{{ upload.filename }}</div>
+        <div class="fdate">
+          {{ upload.upload_at.strftime('%Y.%m.%d') if upload.upload_at else '' }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  // Drag & Drop UI
+  const zone = document.getElementById('dropZone');
+  const input = document.getElementById('media_file');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--gold)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = 'var(--dark4)'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = 'var(--dark4)';
+    input.files = e.dataTransfer.files;
+  });
+</script>
+{% endblock %}

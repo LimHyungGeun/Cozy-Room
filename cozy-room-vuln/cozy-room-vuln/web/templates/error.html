@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ code }} 오류 — COZY ROOM{% endblock %}
+{% block content %}
+<div style="min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; text-align:center; padding:60px 24px;">
+  <div>
+    <div style="font-family:'Playfair Display',serif; font-size:80px; color:rgba(201,168,76,.15); line-height:1; margin-bottom:16px;">{{ code }}</div>
+    <h1 style="font-family:'Noto Serif KR',serif; font-size:22px; color:var(--white); margin-bottom:8px;">{{ msg }}</h1>
+    <p style="font-size:13px; color:var(--gray); margin-bottom:32px;">요청하신 페이지를 처리하는 중 문제가 발생했습니다.</p>
+    <div style="display:flex; gap:12px; justify-content:center;">
+      <a href="{{ url_for('index') }}" class="btn btn-gold">홈으로 돌아가기</a>
+      <a href="javascript:history.back()" class="btn btn-outline">이전 페이지</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

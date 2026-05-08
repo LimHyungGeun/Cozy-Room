@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}COZY ROOM{% endblock %} — 당신의 특별한 휴식</title>
+  <meta name="description" content="코지룸 - 프리미엄 숙박 예약 플랫폼. 당신의 특별한 휴식을 위한 최고의 선택.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:       #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dark:  #8B6914;
+      --black:      #0A0A0A;
+      --dark:       #111111;
+      --dark2:      #1A1A1A;
+      --dark3:      #222222;
+      --dark4:      #2D2D2D;
+      --gray:       #888888;
+      --gray-light: #BBBBBB;
+      --white:      #F5F0E8;
+      --white2:     #FAF7F2;
+      --red:        #CC4444;
+      --green:      #4A8C5C;
+      --blue:       #3A6EA8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 스크롤바 ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--dark); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+    /* ── 링크 ── */
+    a { color: inherit; text-decoration: none; transition: color .2s; }
+    a:hover { color: var(--gold); }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      background: rgba(10,10,10,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,168,76,.15);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      letter-spacing: .18em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .nav-menu { display: flex; align-items: center; gap: 32px; }
+    .nav-menu a {
+      font-size: 12px;
+      letter-spacing: .12em;
+      color: var(--gray-light);
+      text-transform: uppercase;
+      transition: color .2s;
+    }
+    .nav-menu a:hover, .nav-menu a.active { color: var(--gold); }
+    .nav-divider { width: 1px; height: 16px; background: var(--dark4); }
+    .nav-btn {
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: 8px 20px;
+      border: 1px solid var(--gold-dark);
+      color: var(--gold);
+      border-radius: 2px;
+      transition: all .2s;
+    }
+    .nav-btn:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+    .nav-btn.solid {
+      background: var(--gold);
+      color: var(--black);
+    }
+    .nav-btn.solid:hover {
+      background: var(--gold-light);
+    }
+    .nav-user {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px;
+      color: var(--gray-light);
+    }
+    .nav-user span { color: var(--gold); font-weight: 500; }
+
+    /* ── 플래시 메시지 ── */
+    .flash-container {
+      position: fixed; top: 72px; right: 20px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px;
+      max-width: 360px;
+    }
+    .flash {
+      padding: 14px 20px;
+      border-left: 3px solid;
+      background: var(--dark2);
+      font-size: 13px;
+      line-height: 1.5;
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,.4);
+      animation: slideIn .3s ease;
+      cursor: pointer;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .flash.success { border-color: var(--green); color: #8fcca0; }
+    .flash.danger  { border-color: var(--red);   color: #e8a0a0; }
+    .flash.warning { border-color: var(--gold);  color: var(--gold-light); }
+    .flash.info    { border-color: var(--blue);  color: #a0c0e8; }
+
+    /* ── 콘텐츠 영역 ── */
+    main { flex: 1; padding-top: 64px; }
+
+    /* ── 섹션 공통 ── */
+    .section { padding: 80px 0; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 48px; }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 11px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 40px;
+    }
+
+    /* ── 버튼 ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 32px;
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      border: none; border-radius: 2px;
+      cursor: pointer; transition: all .2s;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .btn-gold {
+      background: var(--gold); color: var(--black);
+    }
+    .btn-gold:hover { background: var(--gold-light); color: var(--black); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--gold-dark);
+      color: var(--gold);
+    }
+    .btn-outline:hover { background: var(--gold); color: var(--black); }
+    .btn-dark {
+      background: var(--dark3); color: var(--gray-light);
+      border: 1px solid var(--dark4);
+    }
+    .btn-dark:hover { border-color: var(--gold-dark); color: var(--gold); }
+    .btn-danger {
+      background: transparent; border: 1px solid var(--red);
+      color: #e8a0a0;
+    }
+    .btn-danger:hover { background: var(--red); color: var(--white); }
+    .btn-sm { padding: 8px 20px; font-size: 11px; }
+    .btn-lg { padding: 16px 48px; font-size: 13px; }
+    .btn-block { display: flex; width: 100%; }
+
+    /* ── 폼 요소 ── */
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 8px;
+    }
+    .form-control {
+      width: 100%;
+      background: var(--dark2);
+      border: 1px solid var(--dark4);
+      color: var(--white);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: 'Noto Sans KR', sans-serif;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-control:focus { border-color: var(--gold-dark); }
+    .form-control::placeholder { color: var(--dark4); }
+    select.form-control option { background: var(--dark2); }
+    textarea.form-control { resize: vertical; min-height: 100px; }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--dark2);
+      border: 1px solid var(--dark3);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color .3s, transform .3s;
+    }
+    .card:hover {
+      border-color: rgba(201,168,76,.3);
+      transform: translateY(-2px);
+    }
+    .card-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+    .card-body { padding: 20px; }
+    .card-title {
+      font-family: 'Noto Serif KR', serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .card-text { font-size: 13px; color: var(--gray); }
+
+    /* ── 배지 ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px;
+      font-size: 10px;
+      letter-spacing: .1em;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+    .badge-gold { background: rgba(201,168,76,.15); color: var(--gold); border: 1px solid rgba(201,168,76,.3); }
+    .badge-green { background: rgba(74,140,92,.15); color: #8fcca0; border: 1px solid rgba(74,140,92,.3); }
+    .badge-red { background: rgba(204,68,68,.15); color: #e8a0a0; border: 1px solid rgba(204,68,68,.3); }
+    .badge-gray { background: var(--dark3); color: var(--gray); border: 1px solid var(--dark4); }
+
+    /* ── 구분선 ── */
+    .divider { border: none; border-top: 1px solid var(--dark3); margin: 32px 0; }
+    .divider-gold { border-top-color: rgba(201,168,76,.2); }
+
+    /* ── 별점 ── */
+    .stars { color: var(--gold); font-size: 14px; }
+
+    /* ── 페이지 헤더 ── */
+    .page-header {
+      background: var(--dark);
+      border-bottom: 1px solid var(--dark3);
+      padding: 48px 0 32px;
+    }
+    .page-header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .breadcrumb {
+      display: flex; gap: 8px; align-items: center;
+      font-size: 12px; color: var(--gray);
+    }
+    .breadcrumb a { color: var(--gray); }
+    .breadcrumb a:hover { color: var(--gold); }
+    .breadcrumb-sep { color: var(--dark4); }
+
+    /* ── 반응형 그리드 ── */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+
+    /* ── 테이블 ── */
+    .table-wrap { overflow-x: auto; }
+    table.data-table { width: 100%; border-collapse: collapse; }
+    table.data-table th {
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      border-bottom: 1px solid var(--dark3);
+      padding: 12px 16px;
+      text-align: left;
+      white-space: nowrap;
+    }
+    table.data-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size: 13px;
+      color: var(--gray-light);
+      vertical-align: middle;
+    }
+    table.data-table tr:hover td { background: rgba(255,255,255,.02); }
+
+    /* ── 알림 박스 ── */
+    .alert {
+      padding: 16px 20px;
+      border-left: 3px solid;
+      border-radius: 0 4px 4px 0;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .alert-info { border-color: var(--blue); background: rgba(58,110,168,.1); color: #a0c0e8; }
+    .alert-warning { border-color: var(--gold); background: rgba(201,168,76,.08); color: var(--gold-light); }
+    .alert-danger { border-color: var(--red); background: rgba(204,68,68,.1); color: #e8a0a0; }
+    .alert-success { border-color: var(--green); background: rgba(74,140,92,.1); color: #8fcca0; }
+
+    /* ── 푸터 ── */
+    footer {
+      background: var(--dark);
+      border-top: 1px solid var(--dark3);
+      padding: 48px 0 24px;
+      margin-top: auto;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: var(--gold);
+      letter-spacing: .18em;
+      margin-bottom: 16px;
+    }
+    .footer-desc { font-size: 12px; color: var(--gray); line-height: 1.8; }
+    .footer-heading {
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 16px;
+    }
+    .footer-links { display: flex; flex-direction: column; gap: 8px; }
+    .footer-links a { font-size: 13px; color: var(--gray); }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-bottom {
+      border-top: 1px solid var(--dark3);
+      padding-top: 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; color: var(--dark4);
+    }
+
+    /* ── 유틸리티 ── */
+    .text-gold { color: var(--gold); }
+    .text-gray { color: var(--gray); }
+    .text-white { color: var(--white); }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .mt-0 { margin-top: 0; } .mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; } .mt-32 { margin-top: 32px; } .mt-48 { margin-top: 48px; }
+    .mb-0 { margin-bottom: 0; } .mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; }
+    .mb-24 { margin-bottom: 24px; } .mb-32 { margin-bottom: 32px; }
+    .flex { display: flex; } .flex-center { display: flex; align-items: center; }
+    .gap-8 { gap: 8px; } .gap-16 { gap: 16px; } .gap-24 { gap: 24px; }
+    .between { justify-content: space-between; }
+    .w-full { width: 100%; }
+    .price-tag {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: var(--gold);
+    }
+    .price-unit { font-size: 11px; color: var(--gray); font-family: 'Noto Sans KR'; }
+
+    @media (max-width: 1024px) {
+      .nav { padding: 0 24px; }
+      .container { padding: 0 24px; }
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .nav-menu { display: none; }
+      .grid-3, .grid-4, .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- 네비게이션 -->
+  <nav class="nav">
+    <a href="{{ url_for('index') }}" class="nav-logo">Cozy Room</a>
+    <div class="nav-menu">
+      <a href="{{ url_for('search') }}" {% if request.endpoint == 'search' %}class="active"{% endif %}>숙소 검색</a>
+      <a href="{{ url_for('search') }}?region=seoul">서울</a>
+      <a href="{{ url_for('search') }}?region=busan">부산</a>
+      <a href="{{ url_for('search') }}?region=jeju">제주</a>
+      <a href="{{ url_for('about') }}">소개</a>
+      <div class="nav-divider"></div>
+      {% if session.get('user_id') %}
+        <div class="nav-user">
+          <span>{{ session.get('name', session.get('username')) }}</span>님
+        </div>
+        <a href="{{ url_for('my_bookings') }}" class="nav-btn">내 예약</a>
+        <a href="{{ url_for('my_profile') }}" class="nav-btn">마이페이지</a>
+        {% if session.get('is_admin') %}
+          <a href="{{ url_for('admin_dashboard') }}" class="nav-btn" style="border-color:#c94c4c;color:#e8a0a0;">관리자</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="nav-btn">로그아웃</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="nav-btn">로그인</a>
+        <a href="{{ url_for('register') }}" class="nav-btn solid">회원가입</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- 플래시 메시지 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container" id="flashContainer">
+        {% for category, message in messages %}
+          <div class="flash {{ category }}" onclick="this.remove()">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">Cozy Room</div>
+          <p class="footer-desc">
+            코지룸은 대한민국 최고의 프리미엄 숙박 예약 플랫폼입니다.<br>
+            당신의 특별한 휴식을 위해 엄선된 숙소를 제공합니다.<br><br>
+            (주)코지룸 | 대표이사 이코지 | 사업자등록번호 123-45-67890<br>
+            통신판매업신고번호 2017-서울강남-4521
+          </p>
+        </div>
+        <div>
+          <div class="footer-heading">서비스</div>
+          <div class="footer-links">
+            <a href="{{ url_for('search') }}">숙소 검색</a>
+            <a href="{{ url_for('booking_check') }}">예약 조회</a>
+            <a href="{{ url_for('my_coupon') if session.get('user_id') else url_for('login') }}">쿠폰</a>
+            <a href="{{ url_for('notice') }}">공지사항</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">고객지원</div>
+          <div class="footer-links">
+            <a href="#">자주 묻는 질문</a>
+            <a href="#">1:1 문의</a>
+            <a href="#">전화 상담 1588-0000</a>
+            <a href="#">이메일 help@cozyroom.kr</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-heading">약관 및 정책</div>
+          <div class="footer-links">
+            <a href="{{ url_for('terms') }}">이용약관</a>
+            <a href="{{ url_for('privacy') }}">개인정보처리방침</a>
+            <a href="{{ url_for('about') }}">회사 소개</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2017 Cozy Room Inc. All rights reserved.</span>
+        <span>서울특별시 강남구 테헤란로 152 강남파이낸스센터 17층</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 플래시 메시지 자동 제거
+    setTimeout(() => {
+      document.querySelectorAll('.flash').forEach(el => {
+        el.style.transition = 'opacity .5s, transform .5s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(100%)';
+        setTimeout(() => el.remove(), 500);
+      });
+    }, 4000);
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

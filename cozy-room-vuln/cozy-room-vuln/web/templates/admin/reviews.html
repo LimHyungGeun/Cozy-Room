@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}리뷰 검토 — 관리자{% endblock %}
+
+{% block head %}
+<style>
+  .review-admin-wrap { max-width: 1100px; margin: 100px auto 60px; padding: 0 24px; }
+  .review-admin-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 28px; font-weight: 400;
+    color: var(--gold); margin-bottom: 8px;
+  }
+  .review-admin-desc { font-size: 13px; color: var(--gray); margin-bottom: 32px; }
+  .review-filter-bar {
+    display: flex; gap: 8px; margin-bottom: 24px;
+  }
+  .filter-btn {
+    padding: 8px 20px; border: 1px solid var(--dark4);
+    background: var(--dark2); color: var(--gray-light);
+    font-size: 12px; border-radius: 6px; cursor: pointer;
+    transition: all .2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--gold-dark); color: var(--white);
+    border-color: var(--gold);
+  }
+  .review-card {
+    background: var(--dark2); border: 1px solid var(--dark4);
+    border-radius: 12px; padding: 24px; margin-bottom: 16px;
+  }
+  .review-card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .review-meta { font-size: 12px; color: var(--gray); }
+  .review-meta strong { color: var(--white); font-size: 14px; }
+  .review-hotel-name { color: var(--gold); font-size: 12px; margin-top: 4px; }
+  .review-stars { color: var(--gold); font-size: 14px; }
+  .review-card-title { font-size: 15px; color: var(--white); margin-bottom: 8px; font-weight: 500; }
+  .review-card-content {
+    font-size: 13px; color: var(--gray-light); line-height: 1.8;
+    padding: 16px; background: var(--dark); border-radius: 8px;
+    margin-bottom: 16px;
+    /* 서식 미리보기를 위해 HTML 렌더링 허용 */
+  }
+  .review-card-image {
+    max-width: 200px; border-radius: 8px; margin-bottom: 16px;
+  }
+  .review-actions { display: flex; gap: 8px; }
+  .btn-approve {
+    padding: 8px 24px; background: var(--green); color: var(--white);
+    border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .btn-reject {
+    padding: 8px 24px; background: var(--red); color: var(--white);
+    border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .status-badge {
+    display: inline-block; padding: 3px 10px;
+    border-radius: 4px; font-size: 11px; font-weight: 500;
+  }
+  .status-pending { background: rgba(201,168,76,.15); color: var(--gold); }
+  .status-approved { background: rgba(74,140,92,.15); color: var(--green); }
+  .status-rejected { background: rgba(204,68,68,.15); color: var(--red); }
+  .empty-state { text-align: center; padding: 60px; color: var(--gray); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-admin-wrap">
+  <div class="review-admin-title">리뷰 검토</div>
+  <div class="review-admin-desc">
+    사용자가 작성한 리뷰를 검토하고 승인/거부합니다.
+    서식이 포함된 리뷰는 미리보기로 확인할 수 있습니다.
+  </div>
+
+  <div class="review-filter-bar">
+    <a href="{{ url_for('admin_reviews', status='pending') }}"
+       class="filter-btn {{ 'active' if status_filter == 'pending' }}">대기중</a>
+    <a href="{{ url_for('admin_reviews', status='approved') }}"
+       class="filter-btn {{ 'active' if status_filter == 'approved' }}">승인됨</a>
+    <a href="{{ url_for('admin_reviews', status='rejected') }}"
+       class="filter-btn {{ 'active' if status_filter == 'rejected' }}">거부됨</a>
+    <a href="{{ url_for('admin_reviews', status='all') }}"
+       class="filter-btn {{ 'active' if status_filter == 'all' }}">전체</a>
+  </div>
+
+  {% if reviews %}
+    {% for review in reviews %}
+    <div class="review-card">
+      <div class="review-card-header">
+        <div>
+          <div class="review-meta">
+            <strong>{{ review.user_name }}</strong>
+            <span>({{ review.username }})</span>
+            &nbsp;·&nbsp;
+            {{ review.created_at.strftime('%Y.%m.%d %H:%M') if review.created_at else '' }}
+          </div>
+          <div class="review-hotel-name">{{ review.hotel_name }}</div>
+        </div>
+        <div>
+          <div class="review-stars">
+            {% for i in review.rating|star_range %}★{% endfor %}
+          </div>
+          <span class="status-badge status-{{ review.status }}">
+            {% if review.status == 'pending' %}대기{% elif review.status == 'approved' %}승인{% else %}거부{% endif %}
+          </span>
+        </div>
+      </div>
+
+      {% if review.title %}
+        <div class="review-card-title">{{ review.title }}</div>
+      {% endif %}
+
+      {# ──────────────────────────────────────────────────────
+         [STEP 3 — XSS 발동 지점]
+         |safe 필터로 HTML을 그대로 렌더링
+         관리자가 "서식 미리보기"를 위해 raw HTML 표시
+         일반 hotel_detail.html 에서는 autoescaped (안전)
+         ────────────────────────────────────────────────────── #}
+      <div class="review-card-content">
+        {{ review.content|safe }}
+      </div>
+
+      {% if review.image_path %}
+        <img class="review-card-image"
+             src="/static/uploads/{{ review.image_path }}"
+             alt="리뷰 이미지"
+             onerror="this.style.display='none'">
+      {% endif %}
+
+      {% if review.status == 'pending' %}
+      <div class="review-actions">
+        <form method="POST" action="{{ url_for('admin_update_review', review_id=review.id) }}">
+          <input type="hidden" name="action" value="approve">
+          <button type="submit" class="btn-approve">✓ 승인</button>
+        </form>
+        <form method="POST" action="{{ url_for('admin_update_review', review_id=review.id) }}">
+          <input type="hidden" name="action" value="reject">
+          <button type="submit" class="btn-reject">✕ 거부</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p style="font-size:40px; margin-bottom:16px;">📋</p>
+      <p>검토할 리뷰가 없습니다.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

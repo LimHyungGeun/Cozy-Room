@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}로그인 — COZY ROOM{% endblock %}
+{% block head %}
+<style>
+  .auth-page {
+    min-height: calc(100vh - 64px);
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, #111111 0%, #0a0a0a 100%);
+    padding: 60px 24px;
+  }
+  .auth-card {
+    width: 100%; max-width: 440px;
+    background: var(--dark2);
+    border: 1px solid var(--dark3);
+    border-radius: 4px;
+    padding: 48px;
+  }
+  .auth-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; letter-spacing: .18em;
+    color: var(--gold); text-align: center;
+    margin-bottom: 8px;
+  }
+  .auth-subtitle {
+    text-align: center; font-size: 13px;
+    color: var(--gray); margin-bottom: 40px;
+  }
+  .auth-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px; color: var(--white);
+    margin-bottom: 32px;
+  }
+  .divider-or {
+    display: flex; align-items: center; gap: 12px;
+    margin: 24px 0; color: var(--gray); font-size: 12px;
+  }
+  .divider-or::before, .divider-or::after {
+    content: ''; flex: 1; height: 1px; background: var(--dark4);
+  }
+  .social-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 12px;
+    background: transparent;
+    border: 1px solid var(--dark4);
+    border-radius: 2px;
+    color: var(--gray-light); font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer; transition: all .2s;
+    margin-bottom: 8px;
+  }
+  .social-btn:hover { border-color: var(--dark4); background: var(--dark3); }
+  .kakao-btn { background: #FEE500; color: #000; border-color: #FEE500; }
+  .kakao-btn:hover { background: #F5DC00; border-color: #F5DC00; color: #000; }
+  .naver-btn { background: #03C75A; color: #fff; border-color: #03C75A; }
+  .naver-btn:hover { background: #02B350; border-color: #02B350; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">Cozy Room</div>
+    <div class="auth-subtitle">당신의 특별한 휴식을 위하여</div>
+    <h1 class="auth-title">로그인</h1>
+
+    <form method="post">
+      <div class="form-group">
+        <label class="form-label">아이디</label>
+        <input type="text" name="username" class="form-control" placeholder="아이디를 입력하세요" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">비밀번호</label>
+        <input type="password" name="password" class="form-control" placeholder="비밀번호를 입력하세요" required autocomplete="current-password">
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:24px;">
+        <a href="#" style="font-size:12px; color:var(--gray);">비밀번호를 잊으셨나요?</a>
+      </div>
+      <button type="submit" class="btn btn-gold btn-block btn-lg">로그인</button>
+    </form>
+
+    <div class="divider-or">또는</div>
+
+    <button class="social-btn kakao-btn">
+      <span>💬</span> 카카오 계정으로 로그인
+    </button>
+    <button class="social-btn naver-btn">
+      <span>N</span> 네이버 계정으로 로그인
+    </button>
+
+    <div style="text-align:center; margin-top:32px; font-size:13px; color:var(--gray);">
+      아직 회원이 아니신가요?
+      <a href="{{ url_for('register') }}" style="color:var(--gold); margin-left:4px;">회원가입</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

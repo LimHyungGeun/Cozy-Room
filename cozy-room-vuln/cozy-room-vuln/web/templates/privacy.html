@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}개인정보처리방침 — COZY ROOM{% endblock %}
+{% block content %}
+<div class="page-header"><div class="container"><h1 class="page-header-title">개인정보처리방침</h1></div></div>
+<div class="container section">
+  <div style="max-width:800px; margin:0 auto; font-size:14px; color:var(--gray-light); line-height:1.9;">
+    <p style="color:var(--gray); margin-bottom:32px;">시행일: 2017년 01월 01일</p>
+
+    <div class="alert alert-warning" style="margin-bottom:32px;">
+      (주)코지룸은 개인정보 보호법, 정보통신망 이용촉진 및 정보보호 등에 관한 법률 등 관련 법령에 따라 이용자의 개인정보를 보호하고자 최선을 다하고 있습니다.
+    </div>
+
+    {% for title, content in [
+      ('1. 수집하는 개인정보 항목', '회사는 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다.\n\n【필수 항목】\n• 아이디, 비밀번호, 이름, 이메일 주소, 휴대폰 번호\n• 예약 정보 (체크인/체크아웃 날짜, 투숙 인원)\n• 결제 정보 (카드번호 일부, 결제 수단)\n\n【선택 항목】\n• 생년월일, 주소, 프로필 사진'),
+      ('2. 개인정보 수집 및 이용 목적', '• 서비스 제공: 숙박 예약, 예약 확인 문자(SMS) 발송, 결제 처리\n• 회원 관리: 회원제 서비스 제공, 본인 확인, 불량 이용자 제재\n• 마케팅 및 광고 활용 (동의 시): 이벤트 정보, 할인 쿠폰, 신규 숙소 안내'),
+      ('3. 개인정보 보유 및 이용 기간', '회사는 원칙적으로 개인정보 수집 및 이용 목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다.\n\n• 회원 정보: 회원 탈퇴 시까지\n• 예약 및 결제 정보: 5년 (전자상거래법)\n• 소비자 불만 및 분쟁 처리 기록: 3년'),
+      ('4. 개인정보의 제3자 제공', '회사는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.\n• 이용자가 사전에 동의한 경우\n• 예약한 숙박 업소에 예약자 정보 제공 (체크인 확인 목적)\n• 법령의 규정에 의한 경우'),
+      ('5. 개인정보의 파기 절차 및 방법', '• 전자적 파일 형태: 복구 불가능한 방법으로 영구 삭제\n• 종이 문서: 분쇄기로 분쇄 또는 소각'),
+      ('6. 개인정보 보호 책임자', '개인정보 보호 책임자: 김보안 (이사)\n이메일: privacy@cozyroom.kr\n전화: 02-1234-5679'),
+    ] %}
+    <div style="margin-bottom:28px;">
+      <h3 style="font-family:'Noto Serif KR',serif; font-size:16px; color:var(--white); margin-bottom:10px; white-space:pre-line;">{{ title }}</h3>
+      <p style="white-space:pre-line;">{{ content }}</p>
+    </div>
+    <hr class="divider">
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

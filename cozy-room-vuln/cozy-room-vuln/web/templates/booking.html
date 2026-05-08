@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}객실 예약 — COZY ROOM{% endblock %}
+{% block head %}
+<style>
+  .booking-layout { display:grid; grid-template-columns:1fr 380px; gap:32px; padding:48px 0; }
+  .booking-section { margin-bottom:32px; }
+  .booking-section-title {
+    font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:16px; padding-bottom:8px;
+    border-bottom:1px solid var(--dark3);
+  }
+  .room-summary {
+    background:var(--dark2); border:1px solid var(--dark3);
+    border-radius:4px; padding:24px; margin-bottom:24px;
+  }
+  .room-summary-type { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:6px; }
+  .room-summary-name { font-family:'Noto Serif KR',serif; font-size:18px; color:var(--white); margin-bottom:4px; }
+  .room-summary-hotel { font-size:13px; color:var(--gray); }
+  .price-breakdown {
+    background:var(--dark2); border:1px solid var(--dark3);
+    border-radius:4px; padding:24px;
+    position:sticky; top:80px;
+  }
+  .price-row { display:flex; justify-content:space-between; padding:10px 0; font-size:13px; border-bottom:1px solid var(--dark3); }
+  .price-row:last-child { border-bottom:none; }
+  .price-row-label { color:var(--gray); }
+  .price-row-value { color:var(--gray-light); }
+  .price-total { font-size:18px; color:var(--gold); font-family:'Playfair Display',serif; }
+  .payment-methods { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:8px; }
+  .payment-method {
+    padding:12px; border:1px solid var(--dark4);
+    border-radius:2px; cursor:pointer; text-align:center;
+    font-size:12px; color:var(--gray); transition:all .2s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .payment-method input { display:none; }
+  .payment-method:has(input:checked) { border-color:var(--gold-dark); color:var(--gold); background:rgba(201,168,76,.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="{{ url_for('index') }}">홈</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="{{ url_for('hotel_detail', hotel_id=room.hotel_id) }}">{{ room.hotel_name }}</a>
+      <span class="breadcrumb-sep">›</span>
+      <span style="color:var(--gray-light);">예약하기</span>
+    </div>
+    <h1 class="page-header-title" style="margin-top:12px;">객실 예약</h1>
+  </div>
+</div>
+
+<div class="container">
+  <div class="booking-layout">
+    <div>
+      <div class="room-summary">
+        <div class="room-summary-type">{{ room.room_type }}</div>
+        <div class="room-summary-name">{{ room.room_name }}</div>
+        <div class="room-summary-hotel">{{ room.hotel_name }} · {{ room.region_name }}</div>
+        <div style="display:flex; gap:16px; margin-top:12px; font-size:12px; color:var(--gray);">
+          <span>🛏️ {{ room.bed_type }}</span>
+          <span>👥 최대 {{ room.capacity }}인</span>
+          {% if room.size_m2 %}<span>📐 {{ room.size_m2 }}㎡</span>{% endif %}
+        </div>
+      </div>
+
+      <form method="post" id="bookingForm">
+        <div class="booking-section">
+          <div class="booking-section-title">투숙 정보</div>
+          <div class="grid-2" style="gap:16px;">
+            <div class="form-group">
+              <label class="form-label">체크인 <span style="color:var(--red)">*</span></label>
+              <input type="date" name="checkin" class="form-control" id="checkin" required
+                     min="{{ now.strftime('%Y-%m-%d') if now else '' }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">체크아웃 <span style="color:var(--red)">*</span></label>
+              <input type="date" name="checkout" class="form-control" id="checkout" required>
+            </div>
+          </div>
+          <div class="alert alert-info" style="font-size:12px;">
+            체크인: {{ room.check_in }} · 체크아웃: {{ room.check_out }}
+          </div>
+        </div>
+
+        <div class="booking-section">
+          <div class="booking-section-title">예약자 정보</div>
+          <div class="form-group">
+            <label class="form-label">예약자 성명 <span style="color:var(--red)">*</span></label>
+            <input type="text" name="guest_name" class="form-control" placeholder="실명을 입력하세요" required value="{{ session.get('name','') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">연락처 <span style="color:var(--red)">*</span></label>
+            <input type="tel" name="guest_phone" class="form-control" placeholder="010-0000-0000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">특별 요청 사항</label>
+            <textarea name="special_req" class="form-control" placeholder="특별 요청 사항이 있으시면 입력해주세요 (요청 사항이 반영되지 않을 수 있습니다)"></textarea>
+          </div>
+        </div>
+
+        <div class="booking-section">
+          <div class="booking-section-title">쿠폰 적용</div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" name="coupon_code" class="form-control" placeholder="쿠폰 코드 입력" style="text-transform:uppercase;">
+          </div>
+          <div style="font-size:11px; color:var(--gray); margin-top:6px;">보유 쿠폰: COZY2024, WELCOME10, PREMIUM20</div>
+        </div>
+
+        <div class="booking-section">
+          <div class="booking-section-title">결제 수단 <span style="color:var(--red)">*</span></div>
+          <div class="payment-methods">
+            <label class="payment-method">
+              <input type="radio" name="payment_method" value="신용카드" checked>
+              💳 신용/체크카드
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment_method" value="카카오페이">
+              💛 카카오페이
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment_method" value="토스페이">
+              💙 토스페이
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment_method" value="네이버페이">
+              💚 네이버페이
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment_method" value="무통장입금">
+              🏦 무통장입금
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment_method" value="현장결제">
+              🏨 현장결제
+            </label>
+          </div>
+        </div>
+
+        <div class="alert alert-warning">
+          <strong>예약 전 확인사항</strong><br>
+          취소·환불 규정에 따라 체크인 3일 전까지 무료 취소가 가능합니다.
+          이후 취소 시 환불 수수료가 발생할 수 있습니다.
+        </div>
+
+        <button type="submit" class="btn btn-gold btn-block btn-lg">예약 확정하기</button>
+      </form>
+    </div>
+
+    <!-- 가격 요약 -->
+    <div>
+      <div class="price-breakdown">
+        <div style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gray); margin-bottom:16px;">가격 요약</div>
+        <div class="price-row">
+          <span class="price-row-label">객실 금액 (1박)</span>
+          <span class="price-row-value">{{ room.price|format_price }}원</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">투숙 기간</span>
+          <span class="price-row-value" id="nightsDisplay">날짜 선택 후 표시</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">서비스 수수료</span>
+          <span class="price-row-value">무료</span>
+        </div>
+        <div class="price-row" style="border-top:1px solid rgba(201,168,76,.2); padding-top:16px; margin-top:4px;">
+          <span style="color:var(--white); font-size:14px;">총 결제 금액</span>
+          <span class="price-total" id="totalDisplay">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const price = {{ room.price }};
+  const ci = document.getElementById('checkin');
+  const co = document.getElementById('checkout');
+
+  function updatePrice() {
+    if (!ci.value || !co.value) return;
+    const d1 = new Date(ci.value), d2 = new Date(co.value);
+    const nights = Math.round((d2 - d1) / 86400000);
+    if (nights < 1) { co.value = ''; return; }
+    document.getElementById('nightsDisplay').textContent = nights + '박';
+    document.getElementById('totalDisplay').textContent = (price * nights).toLocaleString() + '원';
+  }
+
+  ci.addEventListener('change', () => {
+    const next = new Date(ci.value);
+    next.setDate(next.getDate() + 1);
+    co.min = next.toISOString().split('T')[0];
+    if (co.value && co.value <= ci.value) co.value = '';
+    updatePrice();
+  });
+  co.addEventListener('change', updatePrice);
+
+  // 오늘 날짜 설정
+  const today = new Date().toISOString().split('T')[0];
+  ci.min = today;
+</script>
+{% endblock %}

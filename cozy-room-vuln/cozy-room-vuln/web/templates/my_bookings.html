@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}내 예약 내역 — COZY ROOM{% endblock %}
+{% block head %}
+<style>
+  .my-layout { display:grid; grid-template-columns:220px 1fr; gap:32px; padding:48px 0; }
+  .sidebar-nav { position:sticky; top:80px; }
+  .sidebar-nav-title { font-size:9px; letter-spacing:.25em; text-transform:uppercase; color:var(--gray); margin-bottom:16px; }
+  .sidebar-nav-item {
+    display:flex; align-items:center; gap:10px; padding:12px 16px;
+    border-radius:2px; font-size:13px; color:var(--gray-light);
+    transition:all .2s; margin-bottom:4px;
+  }
+  .sidebar-nav-item:hover, .sidebar-nav-item.active { background:rgba(201,168,76,.08); color:var(--gold); }
+  .booking-item {
+    background:var(--dark2); border:1px solid var(--dark3);
+    border-radius:4px; padding:24px; margin-bottom:16px;
+    display:grid; grid-template-columns:1fr auto; gap:20px;
+    transition:border-color .3s;
+  }
+  .booking-item:hover { border-color:rgba(201,168,76,.2); }
+  .booking-hotel { font-family:'Noto Serif KR',serif; font-size:16px; color:var(--white); margin-bottom:4px; }
+  .booking-room { font-size:13px; color:var(--gray); margin-bottom:12px; }
+  .booking-dates { display:flex; gap:24px; font-size:12px; color:var(--gray-light); }
+  .booking-date-item { display:flex; flex-direction:column; gap:2px; }
+  .booking-date-label { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--gray); }
+  .booking-actions { display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; }
+  .booking-price { font-family:'Playfair Display',serif; font-size:20px; color:var(--gold); }
+  .status-badge { padding:4px 12px; border-radius:2px; font-size:11px; }
+  .status-대기 { background:rgba(201,168,76,.15); color:var(--gold); border:1px solid rgba(201,168,76,.3); }
+  .status-확정 { background:rgba(74,140,92,.15); color:#8fcca0; border:1px solid rgba(74,140,92,.3); }
+  .status-취소 { background:rgba(204,68,68,.15); color:#e8a0a0; border:1px solid rgba(204,68,68,.3); }
+  .status-완료 { background:rgba(60,60,60,.6); color:var(--gray); border:1px solid var(--dark4); }
+  .empty-state { text-align:center; padding:80px 24px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-header-title">마이페이지</h1>
+    <div class="breadcrumb"><span style="color:var(--gold);">{{ session.get('name') }}님</span><span class="breadcrumb-sep">·</span><span style="color:var(--gray-light);">내 예약 내역</span></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="my-layout">
+    <!-- 사이드 네비 -->
+    <div class="sidebar-nav">
+      <div class="sidebar-nav-title">마이메뉴</div>
+      <a href="{{ url_for('my_bookings') }}" class="sidebar-nav-item active">🏨 내 예약 내역</a>
+      <a href="{{ url_for('my_profile') }}" class="sidebar-nav-item">👤 프로필 설정</a>
+      <a href="{{ url_for('my_coupon') }}" class="sidebar-nav-item">🎟️ 쿠폰</a>
+      <a href="{{ url_for('change_password') }}" class="sidebar-nav-item">🔒 비밀번호 변경</a>
+      <a href="{{ url_for('booking_check') }}" class="sidebar-nav-item">🔍 예약 조회</a>
+      <hr class="divider" style="margin:16px 0;">
+      <a href="{{ url_for('logout') }}" class="sidebar-nav-item" style="color:var(--gray);">🚪 로그아웃</a>
+    </div>
+
+    <!-- 예약 목록 -->
+    <div>
+      <div class="flex between" style="align-items:center; margin-bottom:24px;">
+        <h2 style="font-family:'Noto Serif KR',serif; font-size:20px; color:var(--white);">예약 내역</h2>
+        <span style="font-size:12px; color:var(--gray);">총 {{ bookings|length }}건</span>
+      </div>
+
+      {% if bookings %}
+        {% for b in bookings %}
+        <div class="booking-item">
+          <div>
+            <div style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gray); margin-bottom:6px;">
+              {{ b.region_name }} · {{ b.booking_code }}
+            </div>
+            <div class="booking-hotel">{{ b.hotel_name }}</div>
+            <div class="booking-room">{{ b.room_name }}</div>
+            <div class="booking-dates">
+              <div class="booking-date-item">
+                <span class="booking-date-label">체크인</span>
+                <span>{{ b.check_in_date|format_date }}</span>
+              </div>
+              <div style="color:var(--dark4); align-self:center;">→</div>
+              <div class="booking-date-item">
+                <span class="booking-date-label">체크아웃</span>
+                <span>{{ b.check_out_date|format_date }}</span>
+              </div>
+              <div class="booking-date-item">
+                <span class="booking-date-label">기간</span>
+                <span>{{ b.nights }}박</span>
+              </div>
+            </div>
+          </div>
+          <div class="booking-actions">
+            <div>
+              <span class="status-badge status-{{ b.status }}">{{ b.status }}</span>
+            </div>
+            <div style="text-align:right;">
+              <div class="booking-price">{{ b.total_price|format_price }}원</div>
+              <div style="font-size:11px; color:var(--gray); margin:8px 0;">{{ b.payment_method }}</div>
+              <div style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
+                {% if b.status == '완료' %}
+                  <a href="{{ url_for('write_review', booking_id=b.id) }}" class="btn btn-outline btn-sm">리뷰 작성</a>
+                {% else %}
+                  <!-- 취약점 테스트: 상태 무관하게 리뷰 작성 가능 (status 검증 제거됨) -->
+                  <a href="{{ url_for('write_review', booking_id=b.id) }}" class="btn btn-outline btn-sm" style="opacity:.6;">리뷰 작성</a>
+                {% endif %}
+                {% if b.status in ('대기', '확정') %}
+                  <form method="post" action="{{ url_for('cancel_booking', booking_id=b.id) }}"
+                        onsubmit="return confirm('예약을 취소하시겠습니까?');" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">예약 취소</button>
+                  </form>
+                {% endif %}
+                <a href="{{ url_for('hotel_detail', hotel_id=b.room_id) }}" class="btn btn-dark btn-sm">숙소 보기</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div style="font-size:48px; opacity:.2; margin-bottom:16px;">🏨</div>
+          <div style="font-family:'Noto Serif KR',serif; font-size:18px; color:var(--gray-light); margin-bottom:8px;">예약 내역이 없습니다</div>
+          <div style="font-size:13px; color:var(--gray); margin-bottom:24px;">특별한 휴식을 위한 첫 예약을 시작해보세요</div>
+          <a href="{{ url_for('search') }}" class="btn btn-gold">숙소 탐색하기</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

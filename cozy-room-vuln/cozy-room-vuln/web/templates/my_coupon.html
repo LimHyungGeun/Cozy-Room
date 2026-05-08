@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}쿠폰 — COZY ROOM{% endblock %}
+{% block head %}
+<style>
+  .my-layout { display:grid; grid-template-columns:220px 1fr; gap:32px; padding:48px 0; }
+  .sidebar-nav { position:sticky; top:80px; }
+  .sidebar-nav-title { font-size:9px; letter-spacing:.25em; text-transform:uppercase; color:var(--gray); margin-bottom:16px; }
+  .sidebar-nav-item { display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:2px; font-size:13px; color:var(--gray-light); transition:all .2s; margin-bottom:4px; }
+  .sidebar-nav-item:hover, .sidebar-nav-item.active { background:rgba(201,168,76,.08); color:var(--gold); }
+  .coupon-card {
+    background:var(--dark2); border:1px solid var(--dark3);
+    border-radius:4px; padding:20px 24px; margin-bottom:12px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:relative; overflow:hidden;
+  }
+  .coupon-card::before {
+    content:''; position:absolute; right:-20px;
+    top:50%; transform:translateY(-50%);
+    width:40px; height:40px; background:var(--black);
+    border-radius:50%;
+  }
+  .coupon-code { font-family:'Playfair Display',serif; font-size:18px; color:var(--gold); letter-spacing:.1em; }
+  .coupon-pct { font-size:28px; font-family:'Playfair Display',serif; color:var(--gold); }
+  .coupon-valid { font-size:11px; color:var(--gray); margin-top:2px; }
+  .register-coupon { background:var(--dark2); border:1px solid var(--dark3); border-radius:4px; padding:28px; margin-bottom:24px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container"><h1 class="page-header-title">마이페이지</h1></div>
+</div>
+<div class="container">
+  <div class="my-layout">
+    <div class="sidebar-nav">
+      <div class="sidebar-nav-title">마이메뉴</div>
+      <a href="{{ url_for('my_bookings') }}" class="sidebar-nav-item">🏨 내 예약 내역</a>
+      <a href="{{ url_for('my_profile') }}" class="sidebar-nav-item">👤 프로필 설정</a>
+      <a href="{{ url_for('my_coupon') }}" class="sidebar-nav-item active">🎟️ 쿠폰</a>
+      <a href="{{ url_for('change_password') }}" class="sidebar-nav-item">🔒 비밀번호 변경</a>
+      <a href="{{ url_for('booking_check') }}" class="sidebar-nav-item">🔍 예약 조회</a>
+      <hr class="divider" style="margin:16px 0;">
+      <a href="{{ url_for('logout') }}" class="sidebar-nav-item" style="color:var(--gray);">🚪 로그아웃</a>
+    </div>
+    <div>
+      <div class="register-coupon">
+        <div style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:16px;">쿠폰 등록</div>
+        <form method="post" style="display:flex; gap:12px;">
+          <input type="text" name="coupon_code" class="form-control" placeholder="쿠폰 코드 입력" style="text-transform:uppercase; letter-spacing:.08em;">
+          <button type="submit" class="btn btn-gold" style="white-space:nowrap;">등록하기</button>
+        </form>
+      </div>
+
+      <div style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gray); margin-bottom:16px;">
+        보유 쿠폰 ({{ coupons|length }}개)
+      </div>
+
+      {% if coupons %}
+        {% for c in coupons %}
+        <div class="coupon-card">
+          <div>
+            <div class="coupon-code">{{ c.code }}</div>
+            <div class="coupon-valid">유효기간: {{ c.valid_until }} · {% if c.is_used %}사용완료{% else %}사용가능{% endif %}</div>
+          </div>
+          <div>
+            <div class="coupon-pct">{{ c.discount_pct }}%</div>
+            <div style="font-size:10px; color:var(--gray); text-align:right;">할인</div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center; padding:60px; color:var(--gray); font-size:13px;">
+          보유한 쿠폰이 없습니다.<br>
+          <span style="color:var(--gold);">WELCOME10</span> 코드를 입력해보세요!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

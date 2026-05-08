@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}프로필 설정 — COZY ROOM{% endblock %}
+{% block head %}
+<style>
+  .my-layout { display:grid; grid-template-columns:220px 1fr; gap:32px; padding:48px 0; }
+  .sidebar-nav { position:sticky; top:80px; }
+  .sidebar-nav-title { font-size:9px; letter-spacing:.25em; text-transform:uppercase; color:var(--gray); margin-bottom:16px; }
+  .sidebar-nav-item { display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:2px; font-size:13px; color:var(--gray-light); transition:all .2s; margin-bottom:4px; }
+  .sidebar-nav-item:hover, .sidebar-nav-item.active { background:rgba(201,168,76,.08); color:var(--gold); }
+  .profile-avatar-wrap { position:relative; width:100px; height:100px; margin-bottom:20px; }
+  .profile-avatar { width:100px; height:100px; border-radius:50%; object-fit:cover; background:var(--dark3); border:2px solid var(--dark4); display:flex; align-items:center; justify-content:center; font-size:40px; overflow:hidden; }
+  .avatar-overlay {
+    position:absolute; inset:0; border-radius:50%;
+    background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .2s; cursor:pointer; font-size:20px;
+  }
+  .profile-avatar-wrap:hover .avatar-overlay { opacity:1; }
+  .profile-section { background:var(--dark2); border:1px solid var(--dark3); border-radius:4px; padding:28px; margin-bottom:24px; }
+  .profile-section-title { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:20px; }
+  .user-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+  /* 파일 업로드 드래그앤드롭 UI */
+  .upload-area {
+    border:2px dashed var(--dark4);
+    border-radius:4px; padding:32px;
+    text-align:center; cursor:pointer;
+    transition:border-color .2s;
+  }
+  .upload-area:hover { border-color:var(--gold-dark); }
+  .upload-area-icon { font-size:32px; margin-bottom:8px; opacity:.4; }
+  .upload-area-text { font-size:13px; color:var(--gray); }
+  .upload-area-sub { font-size:11px; color:var(--dark4); margin-top:4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-header-title">마이페이지</h1>
+    <div class="breadcrumb"><span style="color:var(--gold);">{{ session.get('name') }}님</span><span class="breadcrumb-sep">·</span><span style="color:var(--gray-light);">프로필 설정</span></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="my-layout">
+    <div class="sidebar-nav">
+      <div class="sidebar-nav-title">마이메뉴</div>
+      <a href="{{ url_for('my_bookings') }}" class="sidebar-nav-item">🏨 내 예약 내역</a>
+      <a href="{{ url_for('my_profile') }}" class="sidebar-nav-item active">👤 프로필 설정</a>
+      <a href="{{ url_for('my_coupon') }}" class="sidebar-nav-item">🎟️ 쿠폰</a>
+      <a href="{{ url_for('change_password') }}" class="sidebar-nav-item">🔒 비밀번호 변경</a>
+      <a href="{{ url_for('booking_check') }}" class="sidebar-nav-item">🔍 예약 조회</a>
+      <hr class="divider" style="margin:16px 0;">
+      <a href="{{ url_for('logout') }}" class="sidebar-nav-item" style="color:var(--gray);">🚪 로그아웃</a>
+    </div>
+
+    <div>
+      <form method="post" enctype="multipart/form-data">
+        <!-- 프로필 이미지 -->
+        <div class="profile-section">
+          <div class="profile-section-title">프로필 이미지</div>
+          <div style="display:flex; align-items:center; gap:24px;">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar">
+                {% if user.profile_img and user.profile_img != 'default_profile.png' %}
+                  <img src="{{ url_for('static', filename='uploads/' + user.profile_img) }}" alt="프로필" style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                  👤
+                {% endif %}
+              </div>
+              <div class="avatar-overlay" onclick="document.getElementById('profileImgInput').click()">📷</div>
+            </div>
+            <div>
+              <div style="font-size:13px; color:var(--gray-light); margin-bottom:8px;">{{ user.name }}님의 프로필 사진</div>
+              <!-- ⚠️ 파일 업로드 취약점: 확장자/MIME 검증 없음 -->
+              <input type="file" name="profile_img" id="profileImgInput" style="display:none;" onchange="previewImg(this)">
+              <button type="button" onclick="document.getElementById('profileImgInput').click()" class="btn btn-outline btn-sm">사진 변경</button>
+              <div style="font-size:11px; color:var(--gray); margin-top:6px;">JPG, PNG, GIF 권장</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기본 정보 -->
+        <div class="profile-section">
+          <div class="profile-section-title">기본 정보</div>
+          <div class="user-info-grid">
+            <div class="form-group">
+              <label class="form-label">아이디</label>
+              <input type="text" class="form-control" value="{{ user.username }}" disabled style="opacity:.5;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">이름</label>
+              <input type="text" name="name" class="form-control" value="{{ user.name or '' }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">이메일</label>
+              <input type="email" class="form-control" value="{{ user.email }}" disabled style="opacity:.5;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">휴대폰 번호</label>
+              <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="010-0000-0000">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">주소</label>
+            <input type="text" name="address" class="form-control" value="{{ user.address or '' }}" placeholder="주소를 입력하세요">
+          </div>
+          <div style="display:flex; gap:12px; margin-top:8px;">
+            <button type="submit" class="btn btn-gold">변경사항 저장</button>
+            <a href="{{ url_for('change_password') }}" class="btn btn-outline">비밀번호 변경</a>
+          </div>
+        </div>
+      </form>
+
+      <!-- 계정 정보 (읽기 전용) -->
+      <div class="profile-section">
+        <div class="profile-section-title">계정 정보</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:13px;">
+          <div>
+            <div style="color:var(--gray); font-size:11px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px;">가입일</div>
+            <div style="color:var(--gray-light);">{{ user.created_at.strftime('%Y년 %m월 %d일') if user.created_at else '—' }}</div>
+          </div>
+          <div>
+            <div style="color:var(--gray); font-size:11px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px;">마지막 로그인</div>
+            <div style="color:var(--gray-light);">{{ user.last_login.strftime('%Y.%m.%d %H:%M') if user.last_login else '—' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 리뷰 이미지 업로드 섹션 (별도) -->
+      <div class="profile-section">
+        <div class="profile-section-title">⚠ 파일 업로드 (리뷰/첨부용)</div>
+        <form method="post" action="{{ url_for('my_profile') }}" enctype="multipart/form-data">
+          <!-- ⚠️ File Upload Vulnerability: 확장자·MIME 타입 검증 없이 저장 -->
+          <div class="upload-area" onclick="document.getElementById('attachFile').click()">
+            <div class="upload-area-icon">📎</div>
+            <div class="upload-area-text">파일을 드래그하거나 클릭하여 업로드</div>
+            <div class="upload-area-sub">리뷰 첨부 이미지, 예약 확인서 등 업로드 가능</div>
+            <input type="file" name="profile_img" id="attachFile" style="display:none;" onchange="showFileName(this)">
+          </div>
+          <div id="fileNameDisplay" style="font-size:12px; color:var(--gold); margin-top:8px; display:none;"></div>
+          <button type="submit" class="btn btn-outline btn-sm" style="margin-top:12px;">파일 업로드</button>
+        </form>
+        <div style="font-size:11px; color:var(--gray); margin-top:8px;">
+          업로드 경로: <code style="color:var(--gold-dark);">/static/uploads/</code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function previewImg(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const avatarDiv = document.querySelector('.profile-avatar');
+        avatarDiv.innerHTML = `<img src="${e.target.result}" alt="미리보기" style="width:100%;height:100%;object-fit:cover;">`;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+  function showFileName(input) {
+    const display = document.getElementById('fileNameDisplay');
+    if (input.files && input.files[0]) {
+      display.style.display = 'block';
+      display.textContent = '📎 ' + input.files[0].name;
+    }
+  }
+</script>
+{% endblock %}
